@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            text-align: center;
+        }
+        button {
+            display: block;
+            width: 200px;
+            padding: 10px;
+            margin: 10px auto;
+        }
+        form {
+            display: none;
+            margin-top: 20px;
+        }
+        .form-field {
+            margin: 10px 0;
+        }
+        #processList {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gestão de Processos</h1>
+        <button onclick="showForm('register')">CADASTRAR PROCESSO</button>
+        <button onclick="showForm('progress')">REGISTRAR ANDAMENTO DE PROCESSOS</button>
+        <button onclick="showForm('monitor')">MONITORAMENTO</button>
+
+        <!-- Formulário de Cadastro -->
+        <form id="registerForm">
+            <div class="form-field">
+                <label>PROCESSO SEI:</label>
+                <input type="text" id="processoSei">
+            </div>
+            <div class="form-field">
+                <label>N° PROCESSO DE COMPRA:</label>
+                <input type="text" id="numProcessoCompra">
+            </div>
+            <div class="form-field">
+                <label>PROCEDIMENTO:</label>
+                <input type="text" id="procedimento">
+            </div>
+            <div class="form-field">
+                <label>UNIDADE DEMANDANTE:</label>
+                <input type="text" id="unidadeDemandante">
+            </div>
+            <div class="form-field">
+                <label>OBJETO:</label>
+                <input type="text" id="objeto">
+            </div>
+            <div class="form-field">
+                <label>USUÁRIO:</label>
+                <input type="text" id="usuario">
+            </div>
+            <button type="button" onclick="submitForm()">Cadastrar</button>
+        </form>
+
+        <!-- Formulário de Registro de Andamento -->
+        <form id="progressForm">
+            <div class="form-field">
+                <input type="text" id="searchInput" placeholder="Buscar...">
+            </div>
+            <div id="processList"></div>
+        </form>
+
+        <!-- Painel de Monitoramento -->
+        <div id="monitorPanel"></div>
+    </div>
+
+    <script>
+        const scriptURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTCj-LoZVr4Z8wWhOX1rS_xp1BRPl9_52w4tvhF_tCZAGPqIzDMClCw9nDlcuZs7QWmI4cFavndIILR/pubhtml';
+
+        function showForm(form) {
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('progressForm').style.display = 'none';
+            document.getElementById('monitorPanel').style.display = 'none';
+            if (form === 'register') {
+                document.getElementById('registerForm').style.display = 'block';
+            } else if (form === 'progress') {
+                document.getElementById('progressForm').style.display = 'block';
+                fetchProcesses();
+            } else if (form === 'monitor') {
+                document.getElementById('monitorPanel').style.display = 'block';
+                fetchMonitorData();
+            }
+        }
+
+        function submitForm() {
+            const processoSei = document.getElementById('processoSei').value;
+            const numProcessoCompra = document.getElementById('numProcessoCompra').value;
+            const procedimento = document.getElementById('procedimento').value;
+            const unidadeDemandante = document.getElementById('unidadeDemandante').value;
+            const objeto = document.getElementById('objeto').value;
+            const usuario = document.getElementById('usuario').value;
+
+            fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    processo_sei: processoSei,
+                    num_processo_compra: numProcessoCompra,
+                    procedimento: procedimento,
+                    unidade_demandante: unidadeDemandante,
+                    objeto: objeto,
+                    usuario: usuario
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => response.text()).then(result => {
+                alert('Processo cadastrado com sucesso!');
+                document.getElementById('registerForm').reset();
+            }).catch(error => console.error('Error:', error));
+        }
+
+        function fetchProcesses() {
+            fetch(scriptURL)
+                .then(response => response.json())
+                .then(data => {
+                    const processList = document.getElementById('processList');
+                    processList.innerHTML = '';
+                    data.forEach((process, index) => {
+                        if (index > 0) {  // Skip header row
+                            const div = document.createElement('div');
+                            div.textContent = `${process[0]} - ${process[1]} - ${process[2]} - ${process[3]} - ${process[4]}`;
+                            div.onclick = () => registerProgress(process);
+                            processList.appendChild(div);
+                        }
+                    });
+                    processList.style.display = 'block';
+                });
+        }
+
+        function registerProgress(process) {
+            // Aqui você pode adicionar o formulário e lógica para registrar o andamento do processo
+        }
+
+        function fetchMonitorData() {
+            // Lógica para buscar e exibir dados de monitoramento
+        }
+    </script>
+</body>
+</html>
